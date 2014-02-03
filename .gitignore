@@ -1,4 +1,4 @@
-.pyc
+*.pyc
 .idea/
 sqlite-jdbc-3.7.6.3-20110609.081603-3.jar
 xerial-sqlite-license.txt
