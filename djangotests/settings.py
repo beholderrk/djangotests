@@ -73,14 +73,12 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'djagotests',
         'USER': 'postgres',
-        'PASSWORD': '123456',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '5432',
         'OPTIONS': {
             'autocommit': True,
         }
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -108,3 +106,8 @@ CELERY_ROUTES = {
     'alyticsproc.tasks.exec_function': {'queue': 'exec_function_queue'},
     'alyticsproc.tasks.commit_results': {'queue': 'commit_results_queue'}
 }
+
+try:
+    from .local_settings import *
+except:
+    pass
