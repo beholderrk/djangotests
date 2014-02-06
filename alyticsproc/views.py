@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.shortcuts import render, redirect
 from alyticsproc.tasks import get_testdata, exec_function, commit_results, complete_process
 from core.decorators import ajax_request
-from .models import TestData
+from .models import TestData, LastCheck
 from celery import group
 
 
@@ -13,7 +13,9 @@ def index(request):
         json_data = request.POST.get('json')
         TestData.objects.create(json_data=json_data)
         return {'success': True}
-    return render(request, 'index.html')
+    lastcheck = LastCheck.get_instance()
+    lastresults = TestData.objects.filter(performed=True).order_by('-date_modified')[:10]
+    return render(request, 'index.html', {'lastcheck': lastcheck, 'lastresults': lastresults})
 
 
 def start_processing(request):

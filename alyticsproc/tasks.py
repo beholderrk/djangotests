@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
+import collections
 import json, itertools
 from djangotests.celery import app
 from alyticsproc.function import nii_function
@@ -51,8 +52,9 @@ def commit_results(res, pk):
 
 @app.task
 def complete_process(results):
-    count = len(results)
-    if all(results):
+    count = len(results) if isinstance(results, (list, tuple)) else 1
+    all_true = all(results) if count > 1 else bool(results)
+    if all_true:
         LastCheck.set_success(count)
     else:
         LastCheck.set_fail(count)

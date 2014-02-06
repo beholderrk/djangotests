@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html>{% load pytils_numeral %}
 <html ng-app="alyticsProc">
 <head>
     <title>index</title>
@@ -8,7 +8,11 @@
 {#    <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>#}
     <style>
         header { margin: 20px 0 0 0; }
-        .alert { padding: 15px; }
+        .lastcheck { font-size: 37px; }
+        .lastcheck.glyphicon-ok-sign { color: green }
+        .lastcheck.glyphicon-remove-sign { color: red }
+        .lastresults .glyphicon-ok { color: green }
+        .lastresults .glyphicon-minus { color: red }
     </style>
 </head>
 <body>
@@ -36,15 +40,48 @@
                     <div class="col-md-12"><button type="submit" class="btn btn-default">post</button></div>
                 </div>
             </form>
-            <p class="alert bg-success" ng-if="success">
+            <p class="alert alert-success" ng-if="success">
                 Данные успешно сохранены.
             </p>
             {% endverbatim %}
         </div>
         <div class="col-xs-12 col-md-6">
             <a href="{% url 'start_processing' %}" class="btn btn-default">Начать обработку</a>
-            {% verbatim %}
-            {% endverbatim %}
+            <div class="row">
+                <div class="col-md-5">
+                    <h4>Последняя проверка: <br/>
+                    <small>{{ lastcheck.date_modified|date:"d F Y H:i:s" }}</small></h4>
+                </div>
+                <div class="col-md-1">
+                    <h4>
+                    {% if lastcheck.success %}
+                        <i class="lastcheck glyphicon glyphicon-ok-sign"></i>
+                    {% else %}
+                        <i class="lastcheck glyphicon glyphicon-remove-sign"></i>
+                    {% endif %}
+                    </h4>
+                </div>
+                <div class="col-md-6">
+                    <h4>Выполнено: <br/>
+                    <small>{{ lastcheck.count }} {{ lastcheck.count|choose_plural:"набор,набора,наборов" }}</small>
+                    </h4>
+                </div>
+            </div>
+            <h4>Последние результаты:</h4>
+            <table class="lastresults table table-striped">
+                <tr>
+                    <th>Набор данных</th>
+                    <th>Успех</th>
+                    <th>Результат</th>
+                </tr>
+                {% for lastresult in lastresults %}
+                    <tr>
+                        <td>{{ lastresult.json_data }}</td>
+                        <td><i class="glyphicon glyphicon-{{ lastresult.error|yesno:"minus,ok" }}"></i></td>
+                        <td>{% if lastresult.error %}{{ lastresult.exception }}{% else %}{{ lastresult.result }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </table>
         </div>
     </div>
 </div>
