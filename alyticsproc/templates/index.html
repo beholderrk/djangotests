@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html ng-app="alyticsProc">
+<head>
+    <title>index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+{#    <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>#}
+    <style>
+        header { margin: 20px 0 0 0; }
+        .alert { padding: 15px; }
+    </style>
+</head>
+<body>
+<header></header>
+<div class="container">
+    <!-- Stack the columns on mobile by making one full-width and the other half-width -->
+    <div class="row">
+        <div class="col-xs-12 col-md-6" ng-controller="FormController">
+            {% verbatim %}
+            <form class="form-horizontal" role="form" ng-submit="onSubmit()">
+                <div class="form-group">
+                    <div class="col-md-5"><label for="">a</label></div>
+                    <div class="col-md-7"><label for="">b</label></div>
+                </div>
+                <div class="form-group" ng-repeat="item in items">
+                    <div class="col-md-5"><input class="form-control" ng-model="item.a" type="text"/></div>
+                    <div class="col-md-5"><input class="form-control" ng-model="item.b" type="text"/></div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-default" ng-click="iconClick(item)">
+                            <span class="glyphicon {{ item.action.icon_class }}"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12"><button type="submit" class="btn btn-default">post</button></div>
+                </div>
+            </form>
+            <p class="alert bg-success" ng-if="success">
+                Данные успешно сохранены.
+            </p>
+            {% endverbatim %}
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <a href="{% url 'start_processing' %}" class="btn btn-default">Начать обработку</a>
+            {% verbatim %}
+            {% endverbatim %}
+        </div>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular-cookies.min.js"></script>
+<script type="text/javascript">
+    var alyticsProc = angular.module('alyticsProc', ['ngCookies']);
+    alyticsProc.run(function($rootScope, $http, $cookies){
+        $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
+    });
+    alyticsProc.actions = {
+        add: {name: 'add', icon_class: 'glyphicon-plus'},
+        remove: {name: 'remove', icon_class: 'glyphicon-remove'}
+    };
+    alyticsProc.controller('FormController', function($scope, $http){
+        $scope.success = false;
+        $scope.items = [
+            {action: alyticsProc.actions.add, a: '', b: ''}
+        ];
+        $scope.iconClick = function(item){
+            if(item.action.name === 'add'){
+                item.action = alyticsProc.actions.remove;
+                $scope.items.push(
+                    {action: alyticsProc.actions.add, a: '', b: ''}
+                );
+            } else {
+                var index = $scope.items.indexOf(item);
+                if(index > -1){
+                    $scope.items.splice(index, 1);
+                }
+            }
+
+        };
+        $scope.onSubmit = function(){
+            $scope.success = false;
+            $http({
+                method  : 'POST',
+                url     : '{% url 'index' %}',
+                data    : 'json=' + angular.toJson($scope.items.map(function(item){
+                    return {a: item.a, b: item.b};
+                })),
+                headers : { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).success(function(data){
+                if(data.success){
+                    $scope.success = true;
+                }
+            });
+        };
+    });
+</script>
+</body>
+</html>

@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from django.conf import global_settings
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -26,8 +27,17 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# List of callables that know how to import templates from various sources.
+# See the comments in django/core/template/loader.py for interface
+# documentation.
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+)
 
-# Application definition
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
+) + global_settings.TEMPLATE_CONTEXT_PROCESSORS
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -37,6 +47,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'downcast',
+    'alyticsproc',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,8 +69,17 @@ WSGI_APPLICATION = 'djangotests.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'djagotests',
+        'USER': 'postgres',
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'autocommit': True,
+        }
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
