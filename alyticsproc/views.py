@@ -9,13 +9,16 @@ from celery import group
 
 @ajax_request
 def index(request):
-    if request.method == 'POST':
-        json_data = request.POST.get('json')
-        TestData.objects.create(json_data=json_data)
-        return {'success': True}
     lastcheck = LastCheck.get_instance()
     lastresults = TestData.objects.filter(performed=True).order_by('-date_modified')[:10]
     return render(request, 'index.html', {'lastcheck': lastcheck, 'lastresults': lastresults})
+
+
+@ajax_request
+def save_testdata(request):
+    json_data = request.POST.get('json')
+    TestData.objects.create(json_data=json_data)
+    return {'success': True}
 
 
 def start_processing(request):

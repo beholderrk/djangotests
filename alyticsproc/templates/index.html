@@ -119,7 +119,7 @@
             $scope.success = false;
             $http({
                 method  : 'POST',
-                url     : '{% url 'index' %}',
+                url     : '{% url 'save_testdata' %}',
                 data    : 'json=' + angular.toJson($scope.items.map(function(item){
                     return {a: item.a, b: item.b};
                 })),

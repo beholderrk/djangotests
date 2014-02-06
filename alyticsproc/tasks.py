@@ -52,6 +52,11 @@ def commit_results(res, pk):
 
 @app.task
 def complete_process(results):
+    """
+    Задача выполняется после того как все наборы данных обработаны
+    задача сохраняет общий результат последней обработки
+    @param results: результаты последней обработки данных в виде [bool, bool] или bool
+    """
     count = len(results) if isinstance(results, (list, tuple)) else 1
     all_true = all(results) if count > 1 else bool(results)
     if all_true:
