@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'downcast',
     'alyticsproc',
+    'pytils',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -101,3 +102,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CELERY_ROUTES = {
+    'alyticsproc.tasks.get_testdata': {'queue': 'get_testdata_queue'},
+    'alyticsproc.tasks.exec_function': {'queue': 'exec_function_queue'},
+    'alyticsproc.tasks.commit_results': {'queue': 'commit_results_queue'}
+}
