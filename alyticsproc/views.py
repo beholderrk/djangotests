@@ -7,7 +7,6 @@ from .models import TestData, LastCheck
 from celery import group
 
 
-@ajax_request
 def index(request):
     lastcheck = LastCheck.get_instance()
     lastresults = TestData.objects.filter(performed=True).order_by('-date_modified')[:10]
