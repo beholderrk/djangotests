@@ -1,7 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
-import collections
-import json, itertools
+import re
 from djangotests.celery import app
 from alyticsproc.function import nii_function
 from alyticsproc.models import TestData, LastCheck
@@ -26,7 +25,11 @@ def exec_function(json_str):
     @return либо результат выполнения либо объект exception
     """
     try:
-        return nii_function(json_str)
+        res = nii_function(json_str)
+        if re.match(r'{"result": \d+}', res):
+            return res
+        else:
+            raise Exception('nii_function result have wrong format')
     except Exception as ex:
         return ex
 
@@ -44,8 +47,8 @@ def commit_results(res, pk):
     if isinstance(res, Exception):
         data.error = True
         data.exception = res.__unicode__()
-    elif isinstance(res, dict):
-        data.result = json.dumps(res)
+    elif isinstance(res, str):
+        data.result = res
     data.save()
     return not data.error
 
