@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 from alyticsproc.tasks import get_testdata, exec_function, commit_results, complete_process
 from core.decorators import ajax_request
 from .models import TestData, LastCheck
@@ -13,6 +14,7 @@ def index(request):
     return render(request, 'index.html', {'lastcheck': lastcheck, 'lastresults': lastresults})
 
 
+@csrf_exempt
 @ajax_request
 def save_testdata(request):
     json_data = request.POST.get('json')
