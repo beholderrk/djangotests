@@ -68,13 +68,13 @@ class Google(Component):
     project_id = models.CharField(max_length=36)
 
     def do_work(self):
-        print "Good work for %s" % self.project_id
+        return "Good work for %s" % self.project_id
 
 
 class Yandex(Component):
     goal_id = models.IntegerField()
 
     def do_work(self):
-        print "Awesome %s" % self.goal_id
+        return "Awesome %s" % self.goal_id
 
 
