@@ -49,6 +49,8 @@ INSTALLED_APPS = (
     'downcast',
     'alyticsproc',
     'pytils',
+    'tastypie',
+    'south',
 )
 
 MIDDLEWARE_CLASSES = (
