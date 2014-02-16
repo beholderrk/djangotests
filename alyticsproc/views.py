@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from alyticsproc.tasks import get_testdata, exec_function, commit_results, complete_process
 from core.decorators import ajax_request
-from .models import TestData, LastCheck
+from .models import LastCheck
 from celery import group
 
 

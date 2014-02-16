@@ -2,12 +2,23 @@ from django.db import models
 from core.models import DateTimeModel, get_first_or_None
 
 
-class TestData(DateTimeModel):
-    json_data = models.TextField('JSON data', blank=True)
-    performed = models.BooleanField(default=False)
-    result = models.TextField('JSON result', blank=True)
-    error = models.BooleanField(default=False)
+class DataSet(DateTimeModel):
+    name = models.CharField(blank=True, max_length=25)
+    user = models.ForeignKey('auth.User')
+
+
+class DataItem(DateTimeModel):
+    a = models.IntegerField()
+    b = models.IntegerField()
+    dataset = models.ForeignKey(DataSet)
+
+
+class ExecHistory(DateTimeModel):
+    success = models.BooleanField()
+    error = models.BooleanField()
+    result = models.TextField(blank=True)
     exception = models.TextField('Exception', blank=True)
+    dataset = models.ForeignKey(DataSet)
 
 
 class LastCheck(DateTimeModel):

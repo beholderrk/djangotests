@@ -1,16 +1,19 @@
 from django.contrib import admin
-from .models import TestData, LastCheck
-
-
-class TestDataAdmin(admin.ModelAdmin):
-    list_display = ('json_data', 'performed', 'result', 'error', 'exception', 'date_modified')
-    list_filter = ('performed', 'error')
-    date_hierarchy = 'date_modified'
+from .models import LastCheck, DataSet, DataItem
 
 
 class LastCheckAdmin(admin.ModelAdmin):
     list_display = ('success', 'count', 'date_modified')
 
 
-admin.site.register(TestData, TestDataAdmin)
+class DataItemInline(admin.TabularInline):
+    model = DataItem
+
+
+class DataSetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'date_modified')
+    inlines = [DataItemInline]
+
+
 admin.site.register(LastCheck, LastCheckAdmin)
+admin.site.register(DataSet, DataSetAdmin)

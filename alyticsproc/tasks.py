@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import re
 from djangotests.celery import app
 from alyticsproc.function import nii_function
-from alyticsproc.models import TestData, LastCheck
+from alyticsproc.models import LastCheck
 
 
 @app.task
