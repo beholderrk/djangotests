@@ -10,7 +10,6 @@ v1_api.register(UserResource())
 
 urlpatterns = patterns('alyticsproc.views',
     url(r'^$', 'index', name='index'),
-    url(r'^save-test-data$', 'save_testdata', name='save_testdata'),
     url(r'^start-processing/$', 'start_processing', name='start_processing'),
 
     url(r'api/', include(v1_api.urls)),
