@@ -135,7 +135,6 @@
         };
         $scope.removeDataSet = function(dataset){
             dataset_res.delete({resource_name: DATASET_RN, pk: dataset.id}, function(data){
-                console.log(data);
                 $scope.updateList();
                 // todo: предусмотреть ситуацию когда элемент выбран на форме
             });
