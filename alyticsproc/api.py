@@ -47,7 +47,6 @@ class DataSetAuthorization(Authorization):
         return bundle.obj.user == bundle.request.user
 
     def delete_list(self, object_list, bundle):
-        # Sorry user, no deletes for you!
         return self.allowed_objs(object_list, bundle)
 
     def delete_detail(self, object_list, bundle):
@@ -56,9 +55,55 @@ class DataSetAuthorization(Authorization):
 
 class DataSetResource(ModelResource):
     user = fields.ForeignKey(UserResource, 'user')
+    items = fields.ToManyField('alyticsproc.api.DataItemResource', 'dataitem_set', full=True)
 
     class Meta:
         queryset = DataSet.objects.all()
         resource_name = 'dataset'
         authentication = BasicAuthentication()
         authorization = DataSetAuthorization()
+
+
+class DataItemAuthorization(Authorization):
+    def allowed_objs(self, object_list, bundle):
+        allowed = []
+
+        # Since they may not all be saved, iterate over them.
+        for obj in object_list:
+            if obj.dataset.user == bundle.request.user:
+                allowed.append(obj)
+
+        return allowed
+
+    def read_list(self, object_list, bundle):
+        return object_list.filter(dataset__user=bundle.request.user)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.request.user == bundle.obj.dataset.user
+
+    def create_list(self, object_list, bundle):
+        return object_list
+
+    def create_detail(self, object_list, bundle):
+        return bundle.obj.dataset.user == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        return self.allowed_objs(object_list, bundle)
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.dataset.user == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        return self.allowed_objs(object_list, bundle)
+
+    def delete_detail(self, object_list, bundle):
+        return bundle.obj.dataset.user == bundle.request.user
+
+
+class DataItemResource(ModelResource):
+
+    class Meta:
+        queryset = DataItem.objects.all()
+        resource_name = 'dataitem'
+        authentication = BasicAuthentication()
+        authorization = DataItemAuthorization()

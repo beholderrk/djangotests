@@ -13,6 +13,7 @@
         .lastcheck.glyphicon-remove-sign { color: red }
         .lastresults .glyphicon-ok { color: green }
         .lastresults .glyphicon-minus { color: red }
+        .datasets .glyphicon {cursor: pointer}
     </style>
 </head>
 <body>
@@ -20,13 +21,26 @@
 <div class="container">
     <!-- Stack the columns on mobile by making one full-width and the other half-width -->
     <div class="row">
-        <div class="col-xs-12 col-md-6" ng-controller="FormController">
+        <div class="col-xs-12 col-md-6" ng-controller="UserDataSetController">
             {% verbatim %}
+            <h3>Мои наборы данных</h3>
+            <table class="table table-striped datasets">
+                <tr>
+                    <th>Название</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr ng-repeat="dataset in datasets">
+                    <td>{{ dataset.name }}</td>
+                    <td><span ng-click="editDataSet(dataset)" class="glyphicon glyphicon-edit"></span></td>
+                    <td><span ng-click="removeDataSet(dataset)" class="glyphicon glyphicon-remove"></span></td>
+                </tr>
+            </table>
             <form class="form-horizontal" role="form" ng-submit="onSubmit()">
                 <div class="form-group col-md-12">
-                    <input class="form-control" placeholder="Название" id="name" type="text" ng-model="name"/>
+                    <input class="form-control" placeholder="Название" id="name" type="text" ng-model="dataset.name"/>
                 </div>
-                <div class="form-group" ng-repeat="item in items">
+                <div class="form-group" ng-repeat="item in dataset.items">
                     <div class="col-md-5"><input class="form-control" ng-model="item.a" placeholder="a" type="text"/></div>
                     <div class="col-md-5"><input class="form-control" ng-model="item.b" placeholder="b" type="text"/></div>
                     <div class="col-md-2">
@@ -86,33 +100,53 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular-cookies.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular-resource.min.js"></script>
 <script type="text/javascript">
-    var alyticsProc = angular.module('alyticsProc', ['ngCookies']);
-    alyticsProc.run(function($rootScope, $http, $cookies){
+    var alyticsProc = angular.module('alyticsProc', ['ngCookies', 'ngResource']);
+    alyticsProc.run(function($rootScope, $http, $cookies, $resource){
         $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
     });
+
     alyticsProc.actions = {
         add: {name: 'add', icon_class: 'glyphicon-plus'},
         remove: {name: 'remove', icon_class: 'glyphicon-remove'}
     };
-    alyticsProc.controller('FormController', function($scope, $http){
+    alyticsProc.controller('UserDataSetController', function($scope, $http, $resource){
+        var dataset_res = $resource('/api/v1/:resource_name/:pk/?format=json', {
+            pk: "@pk",
+            resource_name: "@resource_name"
+        });
+
+        dataset_res.get({resource_name: "dataset"}, function(data){ $scope.datasets = data.objects });
+        $scope.editDataSet = function(dataset){
+            $scope.dataset = dataset;
+            $scope.dataset.items = dataset.items.map(function(item){
+                item.action = alyticsProc.actions.remove;
+                return item
+            });
+            var last = $scope.dataset.items[$scope.dataset.items.length - 1];
+            last.action = alyticsProc.actions.add;
+        };
+
         $scope.success = false;
-        $scope.items = [
-            {action: alyticsProc.actions.add, a: '', b: ''}
-        ];
+        $scope.dataset = {
+            name: '',
+            items: [
+                {action: alyticsProc.actions.add, a: '', b: ''}
+            ]
+        };
         $scope.iconClick = function(item){
             if(item.action.name === 'add'){
                 item.action = alyticsProc.actions.remove;
-                $scope.items.push(
+                $scope.dataset.items.push(
                     {action: alyticsProc.actions.add, a: '', b: ''}
                 );
             } else {
-                var index = $scope.items.indexOf(item);
+                var index = $scope.dataset.items.indexOf(item);
                 if(index > -1){
-                    $scope.items.splice(index, 1);
+                    $scope.dataset.items.splice(index, 1);
                 }
             }
-
         };
         $scope.onSubmit = function(){
             $scope.success = false;
