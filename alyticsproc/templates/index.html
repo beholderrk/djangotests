@@ -112,12 +112,15 @@
         remove: {name: 'remove', icon_class: 'glyphicon-remove'}
     };
     alyticsProc.controller('UserDataSetController', function($scope, $http, $resource){
+        var DATASET_RN = "dataset";
         var dataset_res = $resource('/api/v1/:resource_name/:pk/?format=json', {
             pk: "@pk",
             resource_name: "@resource_name"
+        }, {
+            update: {method: "PUT"}
         });
 
-        dataset_res.get({resource_name: "dataset"}, function(data){ $scope.datasets = data.objects });
+        dataset_res.get({resource_name: DATASET_RN}, function(data){ $scope.datasets = data.objects });
         $scope.editDataSet = function(dataset){
             $scope.dataset = dataset;
             $scope.dataset.items = dataset.items.map(function(item){
@@ -150,18 +153,16 @@
         };
         $scope.onSubmit = function(){
             $scope.success = false;
-{#            $http({#}
-{#                method  : 'POST',#}
-{#                url     : '{% url 'save_testdata' %}',#}
-{#                data    : 'json=' + angular.toJson($scope.items.map(function(item){#}
-{#                    return {a: item.a, b: item.b};#}
-{#                })),#}
-{#                headers : { 'Content-Type': 'application/x-www-form-urlencoded' }#}
-{#            }).success(function(data){#}
-{#                if(data.success){#}
-{#                    $scope.success = true;#}
-{#                }#}
-{#            });#}
+            // очищаем данные перед отправкой
+            var post_data = angular.copy($scope.dataset);
+            post_data.items.map(function(item){
+                delete item["action"];
+            });
+
+            // отправляем данные на сервер
+            dataset_res.update({resource_name: DATASET_RN, pk: $scope.dataset.id}, post_data, function(){
+                $scope.success = true;
+            });
         };
     });
 </script>
