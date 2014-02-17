@@ -120,7 +120,10 @@
             update: {method: "PUT"}
         });
 
-        dataset_res.get({resource_name: DATASET_RN}, function(data){ $scope.datasets = data.objects });
+        $scope.updateList = function(){
+            dataset_res.get({resource_name: DATASET_RN}, function(data){ $scope.datasets = data.objects });
+        };
+        $scope.updateList();
         $scope.editDataSet = function(dataset){
             $scope.dataset = dataset;
             $scope.dataset.items = dataset.items.map(function(item){
@@ -129,6 +132,13 @@
             });
             var last = $scope.dataset.items[$scope.dataset.items.length - 1];
             last.action = alyticsProc.actions.add;
+        };
+        $scope.removeDataSet = function(dataset){
+            dataset_res.delete({resource_name: DATASET_RN, pk: dataset.id}, function(data){
+                console.log(data);
+                $scope.updateList();
+                // todo: предусмотреть ситуацию когда элемент выбран на форме
+            });
         };
 
         $scope.success = false;
@@ -162,6 +172,7 @@
             // отправляем данные на сервер
             dataset_res.update({resource_name: DATASET_RN, pk: $scope.dataset.id}, post_data, function(){
                 $scope.success = true;
+                $scope.updateList();
             });
         };
     });
