@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+import sys
 from tastypie.authentication import BasicAuthentication
 from tastypie.resources import ModelResource
 from tastypie.authorization import Authorization
@@ -15,6 +16,12 @@ class UserResource(ModelResource):
         excludes = ['email', 'password', 'is_active', 'is_staff', 'is_superuser']
         allowed_methods = ['get']
         authentication = BasicAuthentication()
+
+
+class DataSetForm(forms.ModelForm):
+    class Meta:
+        model = DataSet
+        exclude = ('user',)
 
 
 class DataSetAuthorization(Authorization):
@@ -38,7 +45,8 @@ class DataSetAuthorization(Authorization):
         return object_list
 
     def create_detail(self, object_list, bundle):
-        return bundle.obj.user == bundle.request.user
+        bundle.obj.user = bundle.request.user
+        return True
 
     def update_list(self, object_list, bundle):
         return self.allowed_objs(object_list, bundle)
@@ -54,14 +62,14 @@ class DataSetAuthorization(Authorization):
 
 
 class DataSetResource(ModelResource):
-    user = fields.ForeignKey(UserResource, 'user')
-    items = fields.ToManyField('alyticsproc.api.DataItemResource', 'dataitem_set', full=True)
+    items = fields.ToManyField('alyticsproc.api.DataItemResource', 'dataitem_set', related_name='dataset',  full=True)
 
     class Meta:
         queryset = DataSet.objects.all()
         resource_name = 'dataset'
         authentication = BasicAuthentication()
         authorization = DataSetAuthorization()
+        validation = FormValidation(form_class=DataSetForm)
 
 
 class DataItemAuthorization(Authorization):
@@ -85,7 +93,7 @@ class DataItemAuthorization(Authorization):
         return object_list
 
     def create_detail(self, object_list, bundle):
-        return bundle.obj.dataset.user == bundle.request.user
+        return True
 
     def update_list(self, object_list, bundle):
         return self.allowed_objs(object_list, bundle)
@@ -101,6 +109,7 @@ class DataItemAuthorization(Authorization):
 
 
 class DataItemResource(ModelResource):
+    dataset = fields.ToOneField(DataSetResource, 'dataset')
 
     class Meta:
         queryset = DataItem.objects.all()

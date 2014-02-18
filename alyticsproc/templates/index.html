@@ -36,6 +36,7 @@
                     <td><span ng-click="removeDataSet(dataset)" class="glyphicon glyphicon-remove"></span></td>
                 </tr>
             </table>
+            <h3>{{ title }}</h3>
             <form class="form-horizontal" role="form" ng-submit="onSubmit()">
                 <div class="form-group col-md-12">
                     <input class="form-control" placeholder="Название" id="name" type="text" ng-model="dataset.name"/>
@@ -50,7 +51,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <div class="col-md-12"><button type="submit" class="btn btn-default">post</button></div>
+                    <div class="col-md-12"><button type="submit" class="btn btn-default">post</button>
+                        <a href="" ng-if="!is_add" ng-click="initForm()">или добавить новый</a></div>
                 </div>
             </form>
             <p class="alert alert-success" ng-if="success">
@@ -113,6 +115,10 @@
     };
     alyticsProc.controller('UserDataSetController', function($scope, $http, $resource){
         var DATASET_RN = "dataset";
+        var TITLE_ADD = 'Добавить набор данных';
+        var TITLE_EDIT = 'Редактировать набор данных';
+
+
         var dataset_res = $resource('/api/v1/:resource_name/:pk/?format=json', {
             pk: "@pk",
             resource_name: "@resource_name"
@@ -120,11 +126,17 @@
             update: {method: "PUT"}
         });
 
-        $scope.updateList = function(){
-            dataset_res.get({resource_name: DATASET_RN}, function(data){ $scope.datasets = data.objects });
+        $scope.updateList = function(datasets){
+            if(datasets){
+                $scope.datasets = datasets
+            } else {
+                dataset_res.get({resource_name: DATASET_RN}, function(data){ $scope.datasets = data.objects });
+            }
         };
         $scope.updateList();
         $scope.editDataSet = function(dataset){
+            $scope.title = TITLE_EDIT;
+            $scope.is_add = false;
             $scope.dataset = dataset;
             $scope.dataset.items = dataset.items.map(function(item){
                 item.action = alyticsProc.actions.remove;
@@ -134,25 +146,28 @@
             last.action = alyticsProc.actions.add;
         };
         $scope.removeDataSet = function(dataset){
+            if($scope.dataset.id === dataset.id){
+                // сбрасываем форму если редактируется удалемый датасет
+                $scope.initForm();
+            }
             dataset_res.delete({resource_name: DATASET_RN, pk: dataset.id}, function(data){
-                if($scope.dataset.id === dataset.id){
-                    // сбрасываем форму если редактируется удалемый датасет
-                    $scope.dataset = $scope.initDataSet();
-                }
                 $scope.updateList();
             });
         };
 
-        $scope.success = false;
-        $scope.initDataSet = function(){
-            return {
+
+        $scope.initForm = function(){
+            $scope.is_add = true;
+            $scope.title = TITLE_ADD;
+            $scope.success = false;
+            $scope.dataset = {
                 name: '',
                 items: [
                     {action: alyticsProc.actions.add, a: '', b: ''}
                 ]
             };
         };
-        $scope.dataset = $scope.initDataSet();
+        $scope.initForm();
         $scope.iconClick = function(item){
             if(item.action.name === 'add'){
                 item.action = alyticsProc.actions.remove;
@@ -174,11 +189,19 @@
                 delete item["action"];
             });
 
-            // отправляем данные на сервер
-            dataset_res.update({resource_name: DATASET_RN, pk: $scope.dataset.id}, post_data, function(){
-                $scope.success = true;
-                $scope.updateList();
-            });
+            if($scope.is_add){
+                dataset_res.save({resource_name: DATASET_RN}, post_data, function(data){
+                    $scope.success = true;
+                    $scope.updateList();
+                    $scope.initForm();
+                });
+            } else {
+                // отправляем данные на сервер
+                dataset_res.update({resource_name: DATASET_RN, pk: $scope.dataset.id}, post_data, function(){
+                    $scope.success = true;
+                    $scope.updateList();
+                });
+            }
         };
     });
 </script>
