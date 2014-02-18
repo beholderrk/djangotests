@@ -14,6 +14,8 @@
         .lastresults .glyphicon-ok { color: green }
         .lastresults .glyphicon-minus { color: red }
         .datasets .glyphicon {cursor: pointer}
+        input.ng-valid { background: #d0eec1; }
+        input.ng-invalid { background: #f0c2c5; }
     </style>
 </head>
 <body>
@@ -37,13 +39,13 @@
                 </tr>
             </table>
             <h3>{{ title }}</h3>
-            <form class="form-horizontal" role="form" ng-submit="onSubmit()">
+            <form class="form-horizontal" role="form" ng-submit="onSubmit()" novalidate>
                 <div class="form-group col-md-12">
-                    <input class="form-control" placeholder="Название" id="name" type="text" ng-model="dataset.name"/>
+                    <input class="form-control" placeholder="Название" id="name" type="text" ng-maxlength="25" ng-model="dataset.name"/>
                 </div>
                 <div class="form-group" ng-repeat="item in dataset.items">
-                    <div class="col-md-5"><input class="form-control" ng-model="item.a" placeholder="a" type="text"/></div>
-                    <div class="col-md-5"><input class="form-control" ng-model="item.b" placeholder="b" type="text"/></div>
+                    <div class="col-md-5"><input class="form-control" ng-model="item.a" placeholder="a" type="number" required/></div>
+                    <div class="col-md-5"><input class="form-control" ng-model="item.b" placeholder="b" type="number" required/></div>
                     <div class="col-md-2">
                         <button type="button" class="btn btn-default" ng-click="iconClick(item)">
                             <span class="glyphicon {{ item.action.icon_class }}"></span>
@@ -57,6 +59,9 @@
             </form>
             <p class="alert alert-success" ng-if="success">
                 Данные успешно сохранены.
+            </p>
+            <p class="alert alert-danger" ng-if="error">
+                <ul ng-repeat=""><li></li></ul>
             </p>
             {% endverbatim %}
         </div>
@@ -194,6 +199,8 @@
                     $scope.success = true;
                     $scope.updateList();
                     $scope.initForm();
+                }, function(data){
+                    $scope.showError(data);
                 });
             } else {
                 // отправляем данные на сервер
@@ -203,6 +210,10 @@
                 });
             }
         };
+        $scope.showError = function(data){
+            $scope.error = true;
+            $scope.errordata = data.data;
+        }
     });
 </script>
 </body>

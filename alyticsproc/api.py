@@ -108,6 +108,11 @@ class DataItemAuthorization(Authorization):
         return bundle.obj.dataset.user == bundle.request.user
 
 
+class DataItemForm(forms.ModelForm):
+    class Meta:
+        model = DataItem
+
+
 class DataItemResource(ModelResource):
     dataset = fields.ToOneField(DataSetResource, 'dataset')
 
@@ -116,3 +121,4 @@ class DataItemResource(ModelResource):
         resource_name = 'dataitem'
         authentication = BasicAuthentication()
         authorization = DataItemAuthorization()
+        validation = FormValidation(form_class=DataItemForm)
