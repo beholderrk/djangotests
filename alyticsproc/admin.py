@@ -8,6 +8,7 @@ class LastCheckAdmin(admin.ModelAdmin):
 
 class DataItemInline(admin.TabularInline):
     model = DataItem
+    extra = 0
 
 
 class DataSetAdmin(admin.ModelAdmin):

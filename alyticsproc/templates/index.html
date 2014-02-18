@@ -135,18 +135,24 @@
         };
         $scope.removeDataSet = function(dataset){
             dataset_res.delete({resource_name: DATASET_RN, pk: dataset.id}, function(data){
+                if($scope.dataset.id === dataset.id){
+                    // сбрасываем форму если редактируется удалемый датасет
+                    $scope.dataset = $scope.initDataSet();
+                }
                 $scope.updateList();
-                // todo: предусмотреть ситуацию когда элемент выбран на форме
             });
         };
 
         $scope.success = false;
-        $scope.dataset = {
-            name: '',
-            items: [
-                {action: alyticsProc.actions.add, a: '', b: ''}
-            ]
+        $scope.initDataSet = function(){
+            return {
+                name: '',
+                items: [
+                    {action: alyticsProc.actions.add, a: '', b: ''}
+                ]
+            };
         };
+        $scope.dataset = $scope.initDataSet();
         $scope.iconClick = function(item){
             if(item.action.name === 'add'){
                 item.action = alyticsProc.actions.remove;
