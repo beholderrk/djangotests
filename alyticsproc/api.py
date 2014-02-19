@@ -122,3 +122,22 @@ class DataItemResource(ModelResource):
         authentication = BasicAuthentication()
         authorization = DataItemAuthorization()
         validation = FormValidation(form_class=DataItemForm)
+
+
+class ExecHistoryAuthorization(Authorization):
+    def read_list(self, object_list, bundle):
+        return object_list.filter(dataset__user=bundle.request.user)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.request.user == bundle.obj.dataset.user
+
+
+class ExecHistoryResource(ModelResource):
+    dataset = fields.OneToOneField(DataSetResource, 'dataset')
+
+    class Meta:
+        queryset = ExecHistory.objects.all()
+        resource_name = 'exechistory'
+        authentication = BasicAuthentication()
+        authorization = DataItemAuthorization()
+        allowed_methods = ['get']
