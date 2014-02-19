@@ -6,11 +6,17 @@ class DataSet(DateTimeModel):
     name = models.CharField(blank=True, max_length=25)
     user = models.ForeignKey('auth.User')
 
+    def __unicode__(self):
+        return self.name
+
 
 class DataItem(DateTimeModel):
     a = models.IntegerField()
     b = models.IntegerField()
     dataset = models.ForeignKey(DataSet)
+
+    def __unicode__(self):
+        return '{"a": %d, "b": %d}' % (self.a, self.b)
 
 
 class ExecHistory(DateTimeModel):
