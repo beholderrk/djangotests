@@ -17,7 +17,7 @@ def get_testdata(pk):
     @return json набор данных
     """
     data = DataSet.objects.get(pk=pk)
-    items = [{item.a, item.b} for item in data.dataitem_set.all()]
+    items = [{'a': item.a, 'b': item.b} for item in data.dataitem_set.all()]
     return json.dumps(items)
 
 
@@ -52,10 +52,11 @@ def commit_results(res, pk):
     data = DataSet.objects.get(pk=pk)
     if isinstance(res, Exception):
         data.exechistory = ExecHistory(success=False, error=True, exception=res.message)
-    elif isinstance(res, str):
+    else:
         data.exechistory = ExecHistory(success=True, error=False, result=res)
+    data.exechistory.save()
     data.save()
-    return not data.error
+    return data.exechistory.success
 
 
 @app.task
