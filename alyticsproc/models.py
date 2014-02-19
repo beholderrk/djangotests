@@ -18,7 +18,7 @@ class ExecHistory(DateTimeModel):
     error = models.BooleanField()
     result = models.TextField(blank=True)
     exception = models.TextField('Exception', blank=True)
-    dataset = models.ForeignKey(DataSet)
+    dataset = models.OneToOneField(DataSet)
 
 
 class LastCheck(DateTimeModel):

@@ -1,9 +1,12 @@
 # coding=utf-8
 from __future__ import absolute_import
+import json
 import re
+import sys
+import traceback
 from djangotests.celery import app
 from alyticsproc.function import nii_function
-from alyticsproc.models import LastCheck
+from alyticsproc.models import LastCheck, DataItem, DataSet, ExecHistory
 
 
 @app.task
@@ -13,8 +16,9 @@ def get_testdata(pk):
     @param pk: pk модели TestData
     @return json набор данных
     """
-    data = TestData.objects.get(pk=pk)
-    return data.json_data
+    data = DataSet.objects.get(pk=pk)
+    items = [{item.a, item.b} for item in data.dataitem_set.all()]
+    return json.dumps(items)
 
 
 @app.task
@@ -26,11 +30,14 @@ def exec_function(json_str):
     """
     try:
         res = nii_function(json_str)
-        if re.match(r'{"result": \d+}', res):
+        if re.match(r'\{\s*"result"\s*:\s*\d+\s*\}', res):
             return res
         else:
             raise Exception('nii_function result have wrong format')
     except Exception as ex:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        ex_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        ex.message = ''.join(ex_list)
         return ex
 
 
@@ -42,13 +49,11 @@ def commit_results(res, pk):
     @param pk: id записи в бд
     @return: результат проверки функции (bool)
     """
-    data = TestData.objects.get(pk=pk)
-    data.performed = True
+    data = DataSet.objects.get(pk=pk)
     if isinstance(res, Exception):
-        data.error = True
-        data.exception = res.__unicode__()
+        data.exechistory = ExecHistory(success=False, error=True, exception=res.message)
     elif isinstance(res, str):
-        data.result = res
+        data.exechistory = ExecHistory(success=True, error=False, result=res)
     data.save()
     return not data.error
 
